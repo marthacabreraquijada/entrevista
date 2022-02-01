@@ -22,13 +22,13 @@ public class StarshipsEntity {
     private String manufacturer;
     @Basic
     @Column(name = "cost_in_credits", nullable = true)
-    private Integer costInCredits;
+    private String costInCredits;
     @Basic
     @Column(name = "length", nullable = true, precision = 0)
     private Double length;
     @Basic
     @Column(name = "max_atmosphering_speed", nullable = true, precision = 0)
-    private Double maxAtmospheringSpeed;
+    private String maxAtmospheringSpeed;
     @Basic
     @Column(name = "crew", nullable = true, length = 255)
     private String crew;
@@ -37,7 +37,7 @@ public class StarshipsEntity {
     private String passengers;
     @Basic
     @Column(name = "cargo_capacity", nullable = true)
-    private Integer cargoCapacity;
+    private Long cargoCapacity;
     @Basic
     @Column(name = "consumables", nullable = true, length = 255)
     private String consumables;
@@ -90,11 +90,11 @@ public class StarshipsEntity {
         this.manufacturer = manufacturer;
     }
 
-    public Integer getCostInCredits() {
+    public String getCostInCredits() {
         return costInCredits;
     }
 
-    public void setCostInCredits(Integer costInCredits) {
+    public void setCostInCredits(String costInCredits) {
         this.costInCredits = costInCredits;
     }
 
@@ -106,11 +106,11 @@ public class StarshipsEntity {
         this.length = length;
     }
 
-    public Double getMaxAtmospheringSpeed() {
+    public String getMaxAtmospheringSpeed() {
         return maxAtmospheringSpeed;
     }
 
-    public void setMaxAtmospheringSpeed(Double maxAtmospheringSpeed) {
+    public void setMaxAtmospheringSpeed(String maxAtmospheringSpeed) {
         this.maxAtmospheringSpeed = maxAtmospheringSpeed;
     }
 
@@ -130,11 +130,11 @@ public class StarshipsEntity {
         this.passengers = passengers;
     }
 
-    public Integer getCargoCapacity() {
+    public Long getCargoCapacity() {
         return cargoCapacity;
     }
 
-    public void setCargoCapacity(Integer cargoCapacity) {
+    public void setCargoCapacity(Long cargoCapacity) {
         this.cargoCapacity = cargoCapacity;
     }
 

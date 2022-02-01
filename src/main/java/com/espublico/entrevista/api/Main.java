@@ -1,9 +1,11 @@
 package com.espublico.entrevista.api;
 
 import com.espublico.entrevista.api.processor.ApiProcessor;
+import com.espublico.entrevista.hibernate.entity.FilmsEntity;
+import com.espublico.entrevista.hibernate.entity.PeopleEntity;
 
-import java.util.HashMap;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -29,13 +31,16 @@ public class Main {
 
                 switch (selectionLevel1) {
                     case 1:
-                        System.out.println("Listar actores...");
+//                        System.out.println("Listar actores...");
+                        List<PeopleEntity> peopleList;
+                        peopleList = processor.listPeople();
+                        printPeople(peopleList);
                         break;
                     case 2:
-                        HashMap<Integer,String> filmsList;
-                        filmsList = processor.listFilms();
-                        printList(filmsList);
                         //System.out.println("Listar películas...");
+                        List<FilmsEntity> filmsList;
+                        filmsList = processor.listFilms();
+                        printFilms(filmsList);
                         System.out.println("--> Selecciona los códigos de películas separados por coma (,): ");
                         selectionLevel2 = input.nextInt();
                         secondSelection();
@@ -58,11 +63,24 @@ public class Main {
         // Preparar listado de salida
     }
 
-    private static void printList(HashMap<Integer,String> list) {
+    private static void printFilms(List<FilmsEntity> list) {
         System.out.println("------------------------------");
-        list.forEach((id, text) -> {
+        list.forEach((film) -> {
             System.out.println("");
-            System.out.println(id + " - " + text);
+            System.out.println(film.getId() + " - " + film.getTitle());
+        });
+        System.out.println("------------------------------");
+    }
+
+    private static void printPeople(List<PeopleEntity> list) {
+        System.out.println("------------------------------");
+        list.forEach((person) -> {
+            System.out.println("");
+            System.out.println(person.getId() + " - " + person.getName() + " (" + person.getFilms().size() + " películas)");
+            System.out.println("Películas: " );
+            person.getFilms().forEach((film) -> {
+                System.out.println(film.getId() + " - " + film.getTitle());
+            });
         });
         System.out.println("------------------------------");
     }

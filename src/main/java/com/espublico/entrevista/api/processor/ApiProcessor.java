@@ -33,7 +33,7 @@ public class ApiProcessor implements ApiConstants {
 
     public void process() {
 
-        this.cleanDB();
+//        this.cleanDB();
 
         try {
             this.processEntities(ENDPOINT_PEOPLE);
@@ -158,12 +158,12 @@ public class ApiProcessor implements ApiConstants {
         starship.setName(String.valueOf(rawStarship.get("name")));
         starship.setModel(String.valueOf(rawStarship.get("model")));
         starship.setManufacturer(String.valueOf(rawStarship.get("manufacturer")));
-        starship.setCostInCredits(Integer.parseInt(rawStarship.get("cost_in_credits")));
+        starship.setCostInCredits(String.valueOf(rawStarship.get("cost_in_credits")));
         starship.setLength(Double.parseDouble(rawStarship.get("length").replace(",","")));
-        starship.setMaxAtmospheringSpeed(Double.parseDouble(rawStarship.get("max_atmosphering_speed")));
+        starship.setMaxAtmospheringSpeed(String.valueOf(rawStarship.get("max_atmosphering_speed")));
         starship.setCrew(String.valueOf(rawStarship.get("crew")));
         starship.setPassengers(String.valueOf(rawStarship.get("passengers")));
-        starship.setCargoCapacity(Integer.parseInt(rawStarship.get("cargo_capacity")));
+        starship.setCargoCapacity(Long.parseLong(rawStarship.get("cargo_capacity")));
         starship.setConsumables(String.valueOf(rawStarship.get("consumables")));
         starship.setHyperdriveRating(String.valueOf(rawStarship.get("hyperdrive_rating")));
         starship.setMglt(Integer.parseInt(rawStarship.get("MGLT")));
@@ -186,45 +186,35 @@ public class ApiProcessor implements ApiConstants {
         return person;
     }
 
-    public HashMap<Integer,String> listPeople(){
+    public List<PeopleEntity> listPeople(){
 
-        var wrapper = new Object(){Session session = null; HashMap<Integer,String> peopleList = new HashMap<>();};
-        wrapper.session = HibernateUtil.getSessionFactory().openSession();
+        Session session = null;
+        session = HibernateUtil.getSessionFactory().openSession();
 
-        List<Object[]> people = wrapper.session.createQuery("select p.id, p.name from PeopleEntity as p").getResultList();
+        List<PeopleEntity> people = session.createQuery("from PeopleEntity p").getResultList();
 
-        people.forEach((typeRow) -> {
-            wrapper.peopleList.put((Integer) typeRow[0], (String)typeRow[1]);
-        });
-
-        if (wrapper.session != null) {
-            wrapper.session.close();
+        if (session != null) {
+            session.close();
         }
 
-        return wrapper.peopleList;
+        return people;
 
     }
 
-    public HashMap<Integer,String> listFilms(){
+    public List<FilmsEntity> listFilms(){
 
-        var wrapper = new Object(){Session session = null; HashMap<Integer,String> filmsList = new HashMap<>();};
-        wrapper.session = HibernateUtil.getSessionFactory().openSession();
+        Session session = null;
+        session = HibernateUtil.getSessionFactory().openSession();
 
-        List<Object[]> film = wrapper.session.createQuery("select f.id, f.title from FilmsEntity as f").getResultList();
+        List<FilmsEntity> films = session.createQuery("from FilmsEntity f").getResultList();
 
-        film.forEach((typeRow) -> {
-            wrapper.filmsList.put((Integer) typeRow[0], (String)typeRow[1]);
-        });
-
-        if (wrapper.session != null) {
-            wrapper.session.close();
+        if (session != null) {
+            session.close();
         }
 
-        return wrapper.filmsList;
+        return films;
 
     }
-
-
 
 
 }

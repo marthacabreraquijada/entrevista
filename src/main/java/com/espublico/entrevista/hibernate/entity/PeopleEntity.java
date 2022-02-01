@@ -33,13 +33,21 @@ public class PeopleEntity {
     @Column(name = "birth_year", nullable = true, length = 255)
     private String birthYear;
 
-    @ManyToMany(cascade = { CascadeType.ALL })
+    @ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
     @JoinTable(
             name = "films_people",
             joinColumns = { @JoinColumn(name = "person_id") },
             inverseJoinColumns = { @JoinColumn(name = "film_id") }
     )
     private Set<FilmsEntity> films = new HashSet<>();
+
+    @ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
+            name = "people_starships",
+            joinColumns = { @JoinColumn(name = "person_id") },
+            inverseJoinColumns = { @JoinColumn(name = "starship_id") }
+    )
+    private Set<StarshipsEntity> starships = new HashSet<>();
 
     public int getId() {
         return id;
@@ -108,6 +116,10 @@ public class PeopleEntity {
     public Set<FilmsEntity> getFilms() { return films; }
 
     public void setFilms(Set<FilmsEntity> films) { this.films = films; }
+
+    public Set<StarshipsEntity> getStarships() { return starships; }
+
+    public void setStarships(Set<StarshipsEntity> starships) { this.starships = starships; }
 
     @Override
     public boolean equals(Object o) {
