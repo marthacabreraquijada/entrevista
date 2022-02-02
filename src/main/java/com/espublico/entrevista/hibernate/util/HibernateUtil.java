@@ -24,7 +24,9 @@ public class HibernateUtil {
 
         Map<String, String> settings = new HashMap<>();
 
-        sessionFactory = new Configuration().configure(new File("hibernate.cfg.xml")).buildSessionFactory();
+        //Configuration con = new Configuration().configure("hibernate.cfg.xml");
+
+        sessionFactory = new Configuration().configure("hibernate.cfg.xml").buildSessionFactory();
 
 //        settings.put("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver");
 //        settings.put("hibernate.connection.url", "jdbc:mysql://localhost:3306/entrevista");
