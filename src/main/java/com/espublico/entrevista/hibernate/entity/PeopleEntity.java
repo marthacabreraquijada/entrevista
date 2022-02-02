@@ -16,10 +16,10 @@ public class PeopleEntity {
     private String name;
     @Basic
     @Column(name = "height", nullable = true, precision = 0)
-    private Double height;
+    private String height;
     @Basic
     @Column(name = "mass", nullable = true, precision = 0)
-    private Double mass;
+    private String mass;
     @Basic
     @Column(name = "hair_color", nullable = true, length = 255)
     private String hairColor;
@@ -65,19 +65,19 @@ public class PeopleEntity {
         this.name = name;
     }
 
-    public Double getHeight() {
+    public String getHeight() {
         return height;
     }
 
-    public void setHeight(Double height) {
+    public void setHeight(String height) {
         this.height = height;
     }
 
-    public Double getMass() {
+    public String getMass() {
         return mass;
     }
 
-    public void setMass(Double mass) {
+    public void setMass(String mass) {
         this.mass = mass;
     }
 

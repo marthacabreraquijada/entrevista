@@ -4,15 +4,15 @@ import com.espublico.entrevista.api.processor.ApiProcessor;
 import com.espublico.entrevista.hibernate.entity.FilmsEntity;
 import com.espublico.entrevista.hibernate.entity.PeopleEntity;
 
-import java.util.InputMismatchException;
-import java.util.List;
-import java.util.Scanner;
+import java.io.InputStreamReader;
+import java.util.*;
 
 public class Main {
 
     public static Scanner input = new Scanner(System.in);
     public static boolean exit = false;
-    public static int selectionLevel1, selectionLevel2;
+    public static int selectionLevel1;
+    public static String selectionLevel2;
 
     public static void main(String[] args) {
 
@@ -22,7 +22,7 @@ public class Main {
         while (!exit) {
             System.out.println("1. Listar actores");
             System.out.println("2. Listar películas");
-            System.out.println("3. Salir");
+            System.out.println("0. Salir");
 
             try {
 
@@ -31,7 +31,7 @@ public class Main {
 
                 switch (selectionLevel1) {
                     case 1:
-//                        System.out.println("Listar actores...");
+                        //System.out.println("Listar actores...");
                         List<PeopleEntity> peopleList;
                         peopleList = processor.listPeople();
                         printPeople(peopleList);
@@ -41,26 +41,45 @@ public class Main {
                         List<FilmsEntity> filmsList;
                         filmsList = processor.listFilms();
                         printFilms(filmsList);
-                        System.out.println("--> Selecciona los códigos de películas separados por coma (,): ");
-                        selectionLevel2 = input.nextInt();
-                        secondSelection();
+                        List<String> selectedList = secondSelection();
+                        processor.searchDriver(selectedList);
                         break;
-                    case 3:
+                    case 0:
                         exit = true;
                         break;
                     default:
                         System.out.println(" ----- Seleccionar sólo opciones disponibles ----- ");
 
                 }
+
             } catch (InputMismatchException e) {
                 System.out.println(" ----- Debes insertar un número ----- ");
                 input.next();
             }
+
+
         }
     }
 
-    private static void secondSelection() {
-        // Preparar listado de salida
+    private static List<String> secondSelection() {
+        System.out.println("--> Selecciona los códigos de películas separados por coma (,): ");
+        System.out.println("    (0 Para salir y X para regresar al menu principal)");
+
+        Scanner scanner = new Scanner(new InputStreamReader(System.in));
+        selectionLevel2 = scanner.nextLine();
+
+        String[] list = selectionLevel2.split(",");
+
+        List<String> inputList = new ArrayList<String>(Arrays.asList(list));
+
+        if (selectionLevel2.equals("0")) {
+            exit = true;
+        }
+
+        System.out.println("Input: " + selectionLevel2);
+
+        return inputList;
+
     }
 
     private static void printFilms(List<FilmsEntity> list) {
@@ -76,11 +95,14 @@ public class Main {
         System.out.println("------------------------------");
         list.forEach((person) -> {
             System.out.println("");
-            System.out.println(person.getId() + " - " + person.getName() + " (" + person.getFilms().size() + " películas)");
-            System.out.println("Películas: " );
-            person.getFilms().forEach((film) -> {
-                System.out.println(film.getId() + " - " + film.getTitle());
-            });
+            int filmsCount = person.getFilms().size();
+            System.out.println(person.getId() + " - " + person.getName() + " (" + filmsCount + " películas)");
+            if (filmsCount > 0) {
+                System.out.println("Películas: " );
+                person.getFilms().forEach((film) -> {
+                    System.out.println("\t" + film.getId() + " - " + film.getTitle());
+                });
+            }
         });
         System.out.println("------------------------------");
     }

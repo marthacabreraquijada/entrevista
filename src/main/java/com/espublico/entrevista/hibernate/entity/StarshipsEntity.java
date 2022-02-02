@@ -37,7 +37,7 @@ public class StarshipsEntity {
     private String passengers;
     @Basic
     @Column(name = "cargo_capacity", nullable = true)
-    private Long cargoCapacity;
+    private String cargoCapacity;
     @Basic
     @Column(name = "consumables", nullable = true, length = 255)
     private String consumables;
@@ -46,7 +46,7 @@ public class StarshipsEntity {
     private String hyperdriveRating;
     @Basic
     @Column(name = "mglt", nullable = true)
-    private Integer mglt;
+    private String mglt;
     @Basic
     @Column(name = "starship_class", nullable = true, length = 255)
     private String starshipClass;
@@ -130,11 +130,11 @@ public class StarshipsEntity {
         this.passengers = passengers;
     }
 
-    public Long getCargoCapacity() {
+    public String getCargoCapacity() {
         return cargoCapacity;
     }
 
-    public void setCargoCapacity(Long cargoCapacity) {
+    public void setCargoCapacity(String cargoCapacity) {
         this.cargoCapacity = cargoCapacity;
     }
 
@@ -154,11 +154,11 @@ public class StarshipsEntity {
         this.hyperdriveRating = hyperdriveRating;
     }
 
-    public Integer getMglt() {
+    public String getMglt() {
         return mglt;
     }
 
-    public void setMglt(Integer mglt) {
+    public void setMglt(String mglt) {
         this.mglt = mglt;
     }
 

@@ -6,7 +6,6 @@ import com.espublico.entrevista.hibernate.entity.PeopleEntity;
 import com.espublico.entrevista.hibernate.entity.StarshipsEntity;
 import com.espublico.entrevista.hibernate.util.HibernateUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.text.CaseUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -26,6 +25,7 @@ import java.util.regex.Pattern;
 public class ApiProcessor implements ApiConstants {
 
     private HttpClient httpClient;
+    private Session session = null;
 
     public ApiProcessor() {
         this.httpClient = HttpClient.newHttpClient();
@@ -33,12 +33,12 @@ public class ApiProcessor implements ApiConstants {
 
     public void process() {
 
-//        this.cleanDB();
+        this.cleanDB();
 
         try {
-            this.processEntities(ENDPOINT_PEOPLE);
             this.processEntities(ENDPOINT_STARSHIPS);
             this.processEntities(ENDPOINT_FILMS);
+            this.processEntities(ENDPOINT_PEOPLE);
         } catch (IOException | InterruptedException e) {
             System.out.println(e.getMessage());
             Logger.getLogger(ApiProcessor.class.getName()).log(Level.SEVERE, null, e);
@@ -76,24 +76,31 @@ public class ApiProcessor implements ApiConstants {
     }
 
     private boolean processEntities(String endpoint) throws IOException, InterruptedException{
-        final HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create(API_URL + endpoint)).build();
-        final HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        final ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> responseMap = mapper.readValue(response.body(), Map.class);
-        List<LinkedHashMap<String,String>> entities = (ArrayList<LinkedHashMap<String,String>>)responseMap.get("results");
+        HttpRequest request;
+        HttpResponse<String> response;
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> responseMap;
+        List<LinkedHashMap<String,Object>> entities = new ArrayList<>();
+        String next = API_URL + endpoint;
+        do {
+            request = HttpRequest.newBuilder().GET().uri(URI.create(next)).build();
+            response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            responseMap = mapper.readValue(response.body(), Map.class);
+            entities.addAll((Collection<? extends LinkedHashMap<String, Object>>) responseMap.get("results"));
+            next = responseMap.get("next") != null ? responseMap.get("next").toString() : null;
+        } while (next != null);
         return this.saveEntities(entities, endpoint);
     }
 
 
-    private boolean saveEntities(List<LinkedHashMap<String,String>> entities, String endpoint) {
-        Session session = null;
+    private boolean saveEntities(List<LinkedHashMap<String,Object>> entities, String endpoint) {
         Transaction transaction = null;
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            this.session = HibernateUtil.getSessionFactory().openSession();
             transaction = session.beginTransaction();
 
-            for (LinkedHashMap<String,String> rawEntity : entities) {
-                rawEntity.put("id", this.parseEntityId(rawEntity.get("url"), endpoint));
+            for (LinkedHashMap<String,Object> rawEntity : entities) {
+                rawEntity.put("id", this.parseEntityId(rawEntity.get("url").toString(), endpoint));
                 Object entity;
                 switch (endpoint) {
                     case ENDPOINT_FILMS:
@@ -109,7 +116,7 @@ public class ApiProcessor implements ApiConstants {
                         throw new IllegalArgumentException("Endpoint no reconocido");
                 }
 
-                session.save(entity);
+                this.session.save(entity);
             }
 
             transaction.commit();
@@ -120,8 +127,8 @@ public class ApiProcessor implements ApiConstants {
             }
             return false;
         } finally {
-            if (session != null) {
-                session.close();
+            if (this.session != null) {
+                this.session.close();
             }
         }
     }
@@ -137,51 +144,72 @@ public class ApiProcessor implements ApiConstants {
         return matcher.group(1);
     }
 
-    private FilmsEntity generateFilm(LinkedHashMap<String, String> rawFilm) throws ParseException {
+    private FilmsEntity generateFilm(LinkedHashMap<String, Object> rawFilm) throws ParseException {
         FilmsEntity film = new FilmsEntity();
-        film.setId(Integer.parseInt(rawFilm.get("id")));
-        film.setTitle(String.valueOf(rawFilm.get("title")));
-        film.setEpisodeId(Integer.valueOf(String.valueOf(rawFilm.get("episode_id"))));
-        film.setDirector(String.valueOf(rawFilm.get("title")));
-        film.setProducer(String.valueOf(rawFilm.get("title")));
-        film.setOpeningCrawl(String.valueOf(rawFilm.get("title")));
+        film.setId(Integer.parseInt(rawFilm.get("id").toString()));
+        film.setTitle(rawFilm.get("title").toString());
+        film.setEpisodeId(Integer.valueOf(rawFilm.get("episode_id").toString()));
+        film.setDirector(rawFilm.get("director").toString());
+        film.setProducer(rawFilm.get("producer").toString());
+        film.setOpeningCrawl(rawFilm.get("opening_crawl").toString());
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        String releaseDate = String.valueOf(rawFilm.get("release_date"));
+        String releaseDate = rawFilm.get("release_date").toString();
         film.setReleaseDate(new java.sql.Date(format.parse(releaseDate).getTime()));
+
+        Set<StarshipsEntity> starships = new HashSet<>();
+        ((ArrayList<String>)rawFilm.get("starships")).forEach((starshipUrl) -> {
+            StarshipsEntity starship = this.session.get(StarshipsEntity.class, Integer.parseInt(this.parseEntityId(starshipUrl, ENDPOINT_STARSHIPS)));
+            starships.add(starship);
+        });
+        film.setStarships(starships);
 
         return film;
     }
 
-    private StarshipsEntity generateStarship(LinkedHashMap<String, String> rawStarship) {
+    private StarshipsEntity generateStarship(LinkedHashMap<String, Object> rawStarship) {
         StarshipsEntity starship = new StarshipsEntity();
-        starship.setId(Integer.parseInt(rawStarship.get("id")));
-        starship.setName(String.valueOf(rawStarship.get("name")));
-        starship.setModel(String.valueOf(rawStarship.get("model")));
-        starship.setManufacturer(String.valueOf(rawStarship.get("manufacturer")));
-        starship.setCostInCredits(String.valueOf(rawStarship.get("cost_in_credits")));
-        starship.setLength(Double.parseDouble(rawStarship.get("length").replace(",","")));
-        starship.setMaxAtmospheringSpeed(String.valueOf(rawStarship.get("max_atmosphering_speed")));
-        starship.setCrew(String.valueOf(rawStarship.get("crew")));
-        starship.setPassengers(String.valueOf(rawStarship.get("passengers")));
-        starship.setCargoCapacity(Long.parseLong(rawStarship.get("cargo_capacity")));
-        starship.setConsumables(String.valueOf(rawStarship.get("consumables")));
-        starship.setHyperdriveRating(String.valueOf(rawStarship.get("hyperdrive_rating")));
-        starship.setMglt(Integer.parseInt(rawStarship.get("MGLT")));
-        starship.setStarshipClass(String.valueOf(rawStarship.get("starship_class")));
+        starship.setId(Integer.parseInt(rawStarship.get("id").toString()));
+        starship.setName(rawStarship.get("name").toString());
+        starship.setModel(rawStarship.get("model").toString());
+        starship.setManufacturer(rawStarship.get("manufacturer").toString());
+        starship.setCostInCredits(rawStarship.get("cost_in_credits").toString());
+        starship.setLength(Double.parseDouble(rawStarship.get("length").toString().replace(",","")));
+        starship.setMaxAtmospheringSpeed(rawStarship.get("max_atmosphering_speed").toString());
+        starship.setCrew(rawStarship.get("crew").toString());
+        starship.setPassengers(rawStarship.get("passengers").toString());
+        starship.setCargoCapacity(rawStarship.get("cargo_capacity").toString());
+        starship.setConsumables(rawStarship.get("consumables").toString());
+        starship.setHyperdriveRating(rawStarship.get("hyperdrive_rating").toString());
+        starship.setMglt(rawStarship.get("MGLT").toString());
+        starship.setStarshipClass(rawStarship.get("starship_class").toString());
 
         return starship;
     }
 
-    private PeopleEntity generatePeople(LinkedHashMap<String, String> rawPerson) {
+    private PeopleEntity generatePeople(LinkedHashMap<String, Object> rawPerson) {
         PeopleEntity person = new PeopleEntity();
-        person.setId(Integer.parseInt(rawPerson.get("id")));
-        person.setName(String.valueOf(rawPerson.get("name")));
-        person.setHeight(Double.parseDouble(rawPerson.get("height")));
-        person.setMass(Double.parseDouble(rawPerson.get("mass")));
-        person.setHairColor(String.valueOf(rawPerson.get("hair_color")));
-        person.setSkinColor(String.valueOf(rawPerson.get("skin_color")));
-        person.setEyeColor(String.valueOf(rawPerson.get("eye_color")));
-        person.setBirthYear(String.valueOf(rawPerson.get("birth_year")));
+        person.setId(Integer.parseInt(rawPerson.get("id").toString()));
+        person.setName(rawPerson.get("name").toString());
+        person.setHeight(rawPerson.get("height").toString());
+        person.setMass(rawPerson.get("mass").toString());
+        person.setHairColor(rawPerson.get("hair_color").toString());
+        person.setSkinColor(rawPerson.get("skin_color").toString());
+        person.setEyeColor(rawPerson.get("eye_color").toString());
+        person.setBirthYear(rawPerson.get("birth_year").toString());
+
+        Set<StarshipsEntity> starships = new HashSet<>();
+        ((ArrayList<String>)rawPerson.get("starships")).forEach((starshipUrl) -> {
+            StarshipsEntity starship = this.session.get(StarshipsEntity.class, Integer.parseInt(this.parseEntityId(starshipUrl, ENDPOINT_STARSHIPS)));
+            starships.add(starship);
+        });
+        person.setStarships(starships);
+
+        Set<FilmsEntity> films = new HashSet<>();
+        ((ArrayList<String>)rawPerson.get("films")).forEach((filmsUrl) -> {
+            FilmsEntity film = this.session.get(FilmsEntity.class, Integer.parseInt(this.parseEntityId(filmsUrl, ENDPOINT_FILMS)));
+            films.add(film);
+        });
+        person.setFilms(films);
 
         return person;
     }
@@ -216,6 +244,17 @@ public class ApiProcessor implements ApiConstants {
 
     }
 
+    public String searchDriver(List<String> selectedList) {
+        Session session = null;
+        session = HibernateUtil.getSessionFactory().openSession();
 
+        String person = session.createQuery("").getResultList();
+
+        if (session != null) {
+            session.close();
+        }
+
+        return person;
+    }
 }
 
