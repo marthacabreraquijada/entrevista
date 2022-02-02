@@ -244,17 +244,25 @@ public class ApiProcessor implements ApiConstants {
 
     }
 
-    public String searchDriver(List<String> selectedList) {
+    public void searchDriver(List<String> selectedList) {
         Session session = null;
         session = HibernateUtil.getSessionFactory().openSession();
 
-        String person = ".." ;//session.createQuery("").getResultList();
+        List<FilmsEntity> films = session.createQuery("from FilmsEntity f where id in (1,2,3) ").getResultList();
+
+        films.forEach((film) -> {
+            System.out.println("");
+            System.out.println(film.getId() + " - " + film.getStarships().size());
+            film.getStarships().forEach((starship) -> {
+                System.out.println("********" + starship.getId() + " - " + starship.getPeople());
+            });
+        });
 
         if (session != null) {
             session.close();
         }
 
-        return person;
+        //return person;
     }
 }
 

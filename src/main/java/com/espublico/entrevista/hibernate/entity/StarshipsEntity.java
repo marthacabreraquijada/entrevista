@@ -56,6 +56,14 @@ public class StarshipsEntity {
             joinColumns = { @JoinColumn(name = "starship_id") },
             inverseJoinColumns = { @JoinColumn(name = "film_id") }
     )
+    Set<PeopleEntity> people = new HashSet<>();
+    @ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
+            name = "people_starships",
+            joinColumns = { @JoinColumn(name = "person_id") },
+            inverseJoinColumns = { @JoinColumn(name = "starship_id") }
+    )
+
     private Set<FilmsEntity> films = new HashSet<>();
 
     public int getId() {
@@ -173,6 +181,10 @@ public class StarshipsEntity {
     public Set<FilmsEntity> getFilms() { return films; }
 
     public void setFilms(Set<FilmsEntity> films) { this.films = films; }
+
+    public Set<PeopleEntity> getPeople() { return people; }
+
+    public void setPeople(Set<PeopleEntity> people) { this.people = people; }
 
     @Override
     public boolean equals(Object o) {

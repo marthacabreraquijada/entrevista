@@ -76,7 +76,7 @@ public class Main {
             exit = true;
         }
 
-        System.out.println("Input: " + selectionLevel2);
+        System.out.println("Input: " + inputList);
 
         return inputList;
 
