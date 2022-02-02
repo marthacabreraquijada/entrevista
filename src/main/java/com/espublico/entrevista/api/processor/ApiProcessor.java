@@ -248,7 +248,7 @@ public class ApiProcessor implements ApiConstants {
         Session session = null;
         session = HibernateUtil.getSessionFactory().openSession();
 
-        String person = session.createQuery("").getResultList();
+        String person = ".." ;//session.createQuery("").getResultList();
 
         if (session != null) {
             session.close();
