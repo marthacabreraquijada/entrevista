@@ -6,8 +6,10 @@ import com.espublico.entrevista.hibernate.entity.PeopleEntity;
 import com.espublico.entrevista.hibernate.entity.StarshipsEntity;
 import com.espublico.entrevista.hibernate.util.HibernateUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.CacheMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import java.io.IOException;
 import java.net.URI;
@@ -54,8 +56,8 @@ public class ApiProcessor implements ApiConstants {
             transaction = session.beginTransaction();
 
             session.createSQLQuery("delete from films_people").executeUpdate();
-            session.createSQLQuery("delete from films_starships").executeUpdate();
             session.createSQLQuery("delete from people_starships").executeUpdate();
+            session.createSQLQuery("delete from films_starships").executeUpdate();
             session.createSQLQuery("delete from films").executeUpdate();
             session.createSQLQuery("delete from people").executeUpdate();
             session.createSQLQuery("delete from starships").executeUpdate();
@@ -244,25 +246,20 @@ public class ApiProcessor implements ApiConstants {
 
     }
 
-    public void searchDriver(List<String> selectedList) {
-        Session session = null;
-        session = HibernateUtil.getSessionFactory().openSession();
+    public StarshipsEntity searchMostDrivenStarship(List<String> selectedList) {
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
+            List<Integer> query = session.createSQLQuery("SELECT fs.starship_id FROM films_starships fs WHERE fs.film_id in (:films) GROUP BY fs.starship_id order by COUNT(fs.film_id), fs.starship_id DESC LIMIT 1")
+                    .setParameterList("films", selectedList).list();
+            if (query.size() == 0) {
+                return null;
+            }
 
-        List<FilmsEntity> films = session.createQuery("from FilmsEntity f where id in (1,2,3) ").getResultList();
-
-        films.forEach((film) -> {
-            System.out.println("");
-            System.out.println(film.getId() + " - " + film.getStarships().size());
-            film.getStarships().forEach((starship) -> {
-                System.out.println("********" + starship.getId() + " - " + starship.getPeople());
-            });
-        });
-
-        if (session != null) {
-            session.close();
+            StarshipsEntity starship = session.get(StarshipsEntity.class, query.get(0));
+            return starship;
+        } catch (Exception e) {
+            return null;
         }
-
-        //return person;
     }
 }
 

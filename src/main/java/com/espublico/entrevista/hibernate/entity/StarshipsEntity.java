@@ -56,15 +56,15 @@ public class StarshipsEntity {
             joinColumns = { @JoinColumn(name = "starship_id") },
             inverseJoinColumns = { @JoinColumn(name = "film_id") }
     )
-    Set<PeopleEntity> people = new HashSet<>();
+    private Set<FilmsEntity> films = new HashSet<>();
     @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(
             name = "people_starships",
-            joinColumns = { @JoinColumn(name = "person_id") },
-            inverseJoinColumns = { @JoinColumn(name = "starship_id") }
+            joinColumns = { @JoinColumn(name = "starship_id") },
+            inverseJoinColumns = { @JoinColumn(name = "person_id") }
     )
+    private Set<PeopleEntity> people = new HashSet<>();
 
-    private Set<FilmsEntity> films = new HashSet<>();
 
     public int getId() {
         return id;

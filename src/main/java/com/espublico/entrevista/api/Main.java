@@ -3,6 +3,7 @@ package com.espublico.entrevista.api;
 import com.espublico.entrevista.api.processor.ApiProcessor;
 import com.espublico.entrevista.hibernate.entity.FilmsEntity;
 import com.espublico.entrevista.hibernate.entity.PeopleEntity;
+import com.espublico.entrevista.hibernate.entity.StarshipsEntity;
 
 import java.io.InputStreamReader;
 import java.util.*;
@@ -20,6 +21,8 @@ public class Main {
         processor.process();
 
         while (!exit) {
+            System.out.println("");
+            System.out.println("MENU PRINCIPAL");
             System.out.println("1. Listar actores");
             System.out.println("2. Listar películas");
             System.out.println("0. Salir");
@@ -42,7 +45,20 @@ public class Main {
                         filmsList = processor.listFilms();
                         printFilms(filmsList);
                         List<String> selectedList = secondSelection();
-                        processor.searchDriver(selectedList);
+                        StarshipsEntity starship = processor.searchMostDrivenStarship(selectedList);
+                        if (starship != null) {
+                            System.out.printf("La nave que más aparece en las películas seleccionadas es: %s", starship.getName());
+                            System.out.println("");
+                            if (starship.getPeople().size() > 0) {
+                                System.out.println("Conductores:");
+                                starship.getPeople().forEach((pilot) -> {
+                                    System.out.println(pilot.getName());
+                                });
+                            } else {
+                                System.out.println("La nave no tiene conductores asignados");
+                            }
+                        }
+
                         break;
                     case 0:
                         exit = true;
