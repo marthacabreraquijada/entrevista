@@ -6,10 +6,8 @@ import com.espublico.entrevista.hibernate.entity.PeopleEntity;
 import com.espublico.entrevista.hibernate.entity.StarshipsEntity;
 import com.espublico.entrevista.hibernate.util.HibernateUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hibernate.CacheMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,15 +22,25 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Clase para procesar y consultar los datos del API de Star Wars
+ * @author: Martha Cabrera
+ */
 public class ApiProcessor implements ApiConstants {
 
     private HttpClient httpClient;
     private Session session = null;
 
+    /**
+     * Constructor del procesador con un HttpClient que que consume el API de StarWars y utiliza Hibernate para interactuar con la base de datos
+     */
     public ApiProcessor() {
         this.httpClient = HttpClient.newHttpClient();
     }
 
+    /**
+     * Método que procesa las entidades principales del API Star Wars
+     */
     public void process() {
 
         this.cleanDB();
@@ -48,6 +56,10 @@ public class ApiProcessor implements ApiConstants {
 
     }
 
+    /**
+     * Método que borra el contenido de las tablas del modelo de datos de Star Wars
+     * @return True o False si se han borrado con éxito
+     */
     private boolean cleanDB (){
         Session session = null;
         Transaction transaction = null;
@@ -77,6 +89,13 @@ public class ApiProcessor implements ApiConstants {
 
     }
 
+    /**
+     * Método que procesa una tabla del API de Star Wars
+     * @param endpoint representa el final de la cadena de caracteres de la URL del api y que determina la tabla que se esta procesando
+     * @throws InterruptedException  si ocurre algún error de interrupción durante la ejecución
+     * @throws IOException si ocurre cualquier otro error
+     * @return True o False dependiendo del resultado de haber guardado la tabla
+     */
     private boolean processEntities(String endpoint) throws IOException, InterruptedException{
         HttpRequest request;
         HttpResponse<String> response;
@@ -94,7 +113,12 @@ public class ApiProcessor implements ApiConstants {
         return this.saveEntities(entities, endpoint);
     }
 
-
+    /**
+     * Método que guarda el contenido de una tabla del API de Star Wars
+     * @param entities Lista de las diferentes ocurrencias dentro del results de las tablas del API
+     * @param endpoint representa el final de la cadena de caracteres de la URL del api y que determina la tabla que se esta procesando
+     * @return True o False dependiendo si la acción de salvar los datos ha finalizado con éxito
+     */
     private boolean saveEntities(List<LinkedHashMap<String,Object>> entities, String endpoint) {
         Transaction transaction = null;
         try {
@@ -135,6 +159,12 @@ public class ApiProcessor implements ApiConstants {
         }
     }
 
+    /**
+     * Método que extrae el ID de la url de una entidad
+     * @param url cadena de caracteres que contiene el identificador de la entidad
+     * @param endpoint representa el final de la cadena de caracteres de la URL del api y que determina la tabla que se esta procesando
+     * @return un String que contiene el ID de la entidad que se esté procesando
+     */
     private String parseEntityId(String url, String endpoint) {
         Pattern pattern = Pattern.compile(
                 API_URL + endpoint + "([0-9]+)",
@@ -146,6 +176,12 @@ public class ApiProcessor implements ApiConstants {
         return matcher.group(1);
     }
 
+    /**
+     * Método que genera el contenido de una entidad contenida dentro del result de un film
+     * @param rawFilm contiene la información de cada una de las propiedades de un film
+     * @throws ParseException por la propiedad de fecha
+     * @return una entidad de film
+     */
     private FilmsEntity generateFilm(LinkedHashMap<String, Object> rawFilm) throws ParseException {
         FilmsEntity film = new FilmsEntity();
         film.setId(Integer.parseInt(rawFilm.get("id").toString()));
@@ -168,6 +204,11 @@ public class ApiProcessor implements ApiConstants {
         return film;
     }
 
+    /**
+     * Método que genera el contenido de una entidad contenida dentro del result de una Starship
+     * @param rawStarship contiene la información de cada una de las propiedades de una Starship
+     * @return una entidad de Starships
+     */
     private StarshipsEntity generateStarship(LinkedHashMap<String, Object> rawStarship) {
         StarshipsEntity starship = new StarshipsEntity();
         starship.setId(Integer.parseInt(rawStarship.get("id").toString()));
@@ -188,6 +229,11 @@ public class ApiProcessor implements ApiConstants {
         return starship;
     }
 
+    /**
+     * Método que genera el contenido de una entidad contenida dentro del result de una persona
+     * @param rawPerson contiene la información de cada una de las propiedades de una persona
+     * @return una entidad de persona
+     */
     private PeopleEntity generatePeople(LinkedHashMap<String, Object> rawPerson) {
         PeopleEntity person = new PeopleEntity();
         person.setId(Integer.parseInt(rawPerson.get("id").toString()));
@@ -216,6 +262,10 @@ public class ApiProcessor implements ApiConstants {
         return person;
     }
 
+    /**
+     * Método que consulta dentro de la base de datos la lista de actores registrados
+     * @return una lista de entidades de persona
+     */
     public List<PeopleEntity> listPeople(){
 
         Session session = null;
@@ -231,6 +281,10 @@ public class ApiProcessor implements ApiConstants {
 
     }
 
+    /**
+     * Método que consulta dentro de la base de datos la lista de películas registradas
+     * @return una lista de entidades de película
+     */
     public List<FilmsEntity> listFilms(){
 
         Session session = null;
@@ -246,6 +300,11 @@ public class ApiProcessor implements ApiConstants {
 
     }
 
+    /**
+     * Método que consulta dentro de la base de datos la nave que más veces aparece en la lista de películas que recibe como parámetro
+     * @param selectedList lista de películas seleccionadas en el menú
+     * @return una entidad de Starships
+     */
     public StarshipsEntity searchMostDrivenStarship(List<String> selectedList) {
         try {
             session = HibernateUtil.getSessionFactory().openSession();

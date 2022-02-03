@@ -1,13 +1,6 @@
 package com.espublico.entrevista.hibernate.util;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.espublico.entrevista.hibernate.entity.*;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.Metadata;
-import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;

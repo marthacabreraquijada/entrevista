@@ -8,6 +8,10 @@ import com.espublico.entrevista.hibernate.entity.StarshipsEntity;
 import java.io.InputStreamReader;
 import java.util.*;
 
+/**
+ * Clase principal para las consultas asociadas al API de Star Wars
+ * @author: Martha Cabrera
+ */
 public class Main {
 
     public static Scanner input = new Scanner(System.in);
@@ -15,6 +19,10 @@ public class Main {
     public static int selectionLevel1;
     public static String selectionLevel2;
 
+    /**
+     * Método principal que hace las llamadas a procesar el API y controla el menu principal
+     * @param args Argumentos de la línea de comando
+     */
     public static void main(String[] args) {
 
         ApiProcessor processor = new ApiProcessor();
@@ -77,6 +85,10 @@ public class Main {
         }
     }
 
+    /**
+     * Método que captura la selección de las películas para la segunda opción del menú principal
+     * @return Lista de IDs de películas seleccionadas
+     */
     private static List<String> secondSelection() {
         System.out.println("--> Selecciona los códigos de películas separados por coma (,): ");
         System.out.println("    (0 Para salir y X para regresar al menu principal)");
@@ -98,6 +110,10 @@ public class Main {
 
     }
 
+    /**
+     * Método que imprime la lista de películas
+     * @param list el parámetro es una lista de películas
+     */
     private static void printFilms(List<FilmsEntity> list) {
         System.out.println("------------------------------");
         list.forEach((film) -> {
@@ -107,6 +123,10 @@ public class Main {
         System.out.println("------------------------------");
     }
 
+    /**
+     * Método que imprime la lista de personas, y de cada una imprime las películas asociadas
+     * @param list el parámetro es una lista de personas
+     */
     private static void printPeople(List<PeopleEntity> list) {
         System.out.println("------------------------------");
         list.forEach((person) -> {

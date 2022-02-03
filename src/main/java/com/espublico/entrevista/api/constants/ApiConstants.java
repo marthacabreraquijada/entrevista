@@ -6,11 +6,11 @@ package com.espublico.entrevista.api.constants;
  */
 public interface ApiConstants {
 
-    public static final String API_URL = "https://swapi.py4e.com/api";
+    String API_URL = "https://swapi.py4e.com/api";
 
-    public static final String ENDPOINT_PEOPLE = "/people/";
-    public static final String ENDPOINT_FILMS = "/films/";
-    public static final String ENDPOINT_STARSHIPS = "/starships/";
+    String ENDPOINT_PEOPLE = "/people/";
+    String ENDPOINT_FILMS = "/films/";
+    String ENDPOINT_STARSHIPS = "/starships/";
 
 
 }
